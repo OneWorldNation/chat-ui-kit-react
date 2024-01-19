@@ -13,7 +13,7 @@ export const SendButton = ({ className, children, ...rest }) => {
     <Button
       {...rest}
       className={classNames(cName, className)}
-      icon={children ? null : <FontAwesomeIcon icon={faPaperPlane} />}
+      // icon={children ? null : <FontAwesomeIcon icon={faPaperPlane} />}
     >
       {children}
     </Button>
