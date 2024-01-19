@@ -82,6 +82,7 @@ function MessageInputInner(
     sendButton,
     attachButton,
     onAttachClick,
+    sendButtonComponent,
     ...rest
   },
   ref
@@ -218,7 +219,9 @@ function MessageInputInner(
           <SendButton
             onClick={send}
             disabled={disabled === true || stateSendDisabled === true}
-          />
+          >
+            {sendButtonComponent || null}
+          </SendButton>
         </div>
       )}
     </div>
@@ -294,6 +297,8 @@ MessageInput.propTypes = {
    * onAttachClick handler
    */
   onAttachClick: PropTypes.func,
+
+  sendButtonComponent: PropTypes.Component,
 };
 
 MessageInputInner.propTypes = MessageInput.propTypes;

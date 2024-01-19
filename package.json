@@ -75,7 +75,7 @@
     "build:umd": "rollup -c",
     "build:cjs": "BABEL_ENV=cjs babel src/components -d dist/cjs",
     "build:esm": "BABEL_ENV=esm babel src/components -d dist/es",
-        "build": "npm run build:clean && npm run build:esm && npm run build:cjs && npm run build:umd",
+    "build": "npm run build:clean && npm run build:esm && npm run build:cjs && npm run build:umd",
     "pack": "npm pack",
     "watch": "chokidar 'src/**/*.*' -c 'npm run build:esm'"
   },
