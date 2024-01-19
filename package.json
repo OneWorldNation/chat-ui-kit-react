@@ -88,12 +88,6 @@
     "classnames": "^2.2.6",
     "prop-types": "^15.7.2"
   },
-  "husky": {
-    "hooks": {
-      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS",
-      "pre-commit": "lint-staged"
-    }
-  },
   "lint-staged": {
     "*.{js,css,md,jsx}": "prettier --write"
   },
