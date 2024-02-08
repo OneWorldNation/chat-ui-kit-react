@@ -81,6 +81,7 @@ export interface MessageProps {
   avatarPosition?: AvatarPosition;
   type?: MessageType;
   payload?: MessagePayload;
+  bubbleClassName?: string;
 }
 
 declare const Message: {
@@ -91,7 +92,6 @@ declare const Message: {
   ImageContent: typeof MessageImageContent;
   CustomContent: typeof MessageCustomContent;
   Footer: typeof MessageFooter;
-  bubbleClassName?: string;
 };
 
 export {
