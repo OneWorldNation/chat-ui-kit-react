@@ -77,7 +77,8 @@
     "build:esm": "BABEL_ENV=esm babel src/components -d dist/es",
     "build": "npm run build:clean && npm run build:esm && npm run build:cjs && npm run build:umd",
     "pack": "npm pack",
-    "watch": "chokidar 'src/**/*.*' -c 'npm run build:esm'"
+    "watch": "chokidar 'src/**/*.*' -c 'npm run build:esm'",
+    "ssm": "asdasdasds"
   },
   "dependencies": {
     "@chatscope/chat-ui-kit-styles": "^1.2.0",
