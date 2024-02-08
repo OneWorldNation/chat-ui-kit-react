@@ -30,7 +30,7 @@ export const Message = ({
   payload: argPayload,
   children,
   className,
-  bubbleClassName,
+  bubbleStyle,
   ...rest
 }) => {
   const cName = `${prefix}-message`;
@@ -171,7 +171,7 @@ export const Message = ({
       )}
       <div className={`${cName}__content-wrapper`}>
         {header}
-        <div className={`${cName}__content ${bubbleClassName}`}>
+        <div className={`${cName}__content ${bubbleStyle}`}>
           {messageContent}
         </div>
         {footer}
@@ -294,7 +294,7 @@ Message.propTypes = {
     PropTypes.string,
     allowedChildren([MessageCustomContent]),
   ]),
-  bubbleClassName: PropTypes.string,
+  bubbleStyle: PropTypes.any,
 };
 
 Message.defaultProps = {

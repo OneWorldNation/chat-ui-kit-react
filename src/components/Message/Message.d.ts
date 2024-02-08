@@ -81,7 +81,7 @@ export interface MessageProps {
   avatarPosition?: AvatarPosition;
   type?: MessageType;
   payload?: MessagePayload;
-  bubbleClassName?: string;
+  bubbleStyle?: string;
 }
 
 declare const Message: {
