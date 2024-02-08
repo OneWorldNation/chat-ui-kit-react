@@ -171,7 +171,7 @@ export const Message = ({
       )}
       <div className={`${cName}__content-wrapper`}>
         {header}
-        <div className={`${cName}__content`} style={{ background: "red" }}>
+        <div className={`${cName}__content`} style={bubbleStyle}>
           {messageContent}
         </div>
         {footer}
