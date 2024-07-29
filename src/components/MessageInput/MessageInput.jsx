@@ -19,6 +19,17 @@ import PerfectScrollbar from "../Scroll";
 
 const Quill = ReactQuill.Quill;
 
+const Parchment = Quill.import("parchment");
+const SizeStyle = new Parchment.Attributor.Class(
+  "size",
+  "custom-quill-chat-size",
+  {
+    scope: Parchment.Scope.INLINE,
+    whitelist: ["small", "normal", "large", "huge"], // Custom sizes
+  }
+);
+Quill.register(SizeStyle, true);
+
 // Define custom colors including a 'remove' option for removing color
 const customColors = [
   "#000000",
@@ -139,11 +150,10 @@ const quillModules = {
       [{ color: customColors }, { background: customColors }],
       ["link"],
       [{ list: "ordered" }, { list: "bullet" }],
-      ["image", "file", "video"],
+      ["image", "file"],
       ["clean"],
     ],
     handlers: {
-      video: videoHandler,
       file: fileHandler,
       color: handleColorChange,
       background: handleBackgroundChange,
@@ -165,7 +175,7 @@ const quillFormats = [
   "bullet",
   "image",
   "file",
-  "video",
+  // "video",
 ];
 
 // Because container depends on fancyScroll
