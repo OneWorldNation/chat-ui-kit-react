@@ -1,4 +1,10 @@
-import React, { useRef, useState, useEffect, useImperativeHandle, forwardRef } from "react";
+import React, {
+  useRef,
+  useState,
+  useEffect,
+  useImperativeHandle,
+  forwardRef,
+} from "react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { noop } from "../utils";
@@ -12,35 +18,73 @@ import PerfectScrollbar from "../Scroll";
 
 // Define custom colors including a 'remove' option for removing color
 const customColors = [
-  '#000000', '#e60000', '#ff9900', '#ffff00', '#008a00',
-  '#0066cc', '#9933ff', '#ffffff', '#facccc', '#ffebcc',
-  '#ffffcc', '#cce8cc', '#cce0f5', '#ebd6ff', '#bbbbbb',
-  '#f06666', '#ffc266', '#ffff66', '#66b966', '#66a3e0',
-  '#c285ff', '#888888', '#a10000', '#b26b00', '#b2b200',
-  '#006100', '#0047b2', '#6b24b2', '#444444', '#5c0000',
-  '#663d00', '#666600', '#003700', '#002966', '#3d1466', 'remove'
+  "#000000",
+  "#e60000",
+  "#ff9900",
+  "#ffff00",
+  "#008a00",
+  "#0066cc",
+  "#9933ff",
+  "#ffffff",
+  "#facccc",
+  "#ffebcc",
+  "#ffffcc",
+  "#cce8cc",
+  "#cce0f5",
+  "#ebd6ff",
+  "#bbbbbb",
+  "#f06666",
+  "#ffc266",
+  "#ffff66",
+  "#66b966",
+  "#66a3e0",
+  "#c285ff",
+  "#888888",
+  "#a10000",
+  "#b26b00",
+  "#b2b200",
+  "#006100",
+  "#0047b2",
+  "#6b24b2",
+  "#444444",
+  "#5c0000",
+  "#663d00",
+  "#666600",
+  "#003700",
+  "#002966",
+  "#3d1466",
+  "remove",
 ];
 
 // Quill toolbar modules and formats
 const quillModules = {
   toolbar: [
-    [{ 'header': '1'}, {'header': '2'}, { 'font': [] }],
-    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-    ['bold', 'italic', 'underline', 'strike', 'blockquote'],
-    [{ 'color': [] }, { 'background': [] }],          // dropdown with defaults from theme
-    [{ 'align': [] }],
-    ['link', 'image', 'video'],
-    ['clean']                                         // remove formatting button
-  ]
+    [{ header: "1" }, { header: "2" }, { font: [] }],
+    [{ list: "ordered" }, { list: "bullet" }],
+    ["bold", "italic", "underline", "strike", "blockquote"],
+    [{ color: [] }, { background: [] }], // dropdown with defaults from theme
+    [{ align: [] }],
+    ["link", "image", "video"],
+    ["clean"], // remove formatting button
+  ],
 };
 
 const quillFormats = [
-  'header', 'font',
-  'list', 'bullet',
-  'bold', 'italic', 'underline', 'strike', 'blockquote',
-  'color', 'background',
-  'align',
-  'link', 'image', 'video'
+  "header",
+  "font",
+  "list",
+  "bullet",
+  "bold",
+  "italic",
+  "underline",
+  "strike",
+  "blockquote",
+  "color",
+  "background",
+  "align",
+  "link",
+  "image",
+  "video",
 ];
 
 // Because container depends on fancyScroll
@@ -111,7 +155,7 @@ function MessageInputInner(
     attachButton,
     onAttachClick,
     sendButtonComponent,
-    useQuill,  // Add useQuill prop
+    useQuill, // Add useQuill prop
     ...rest
   },
   ref
@@ -126,7 +170,7 @@ function MessageInputInner(
 
   // Public API
   const focus = () => {
-    if (typeof msgRef.current !== "undefined") {
+    if (msgRef.current && msgRef.current.focus) {
       msgRef.current.focus();
     }
   };
@@ -152,17 +196,30 @@ function MessageInputInner(
 
   const getContent = () => {
     if (useQuill) {
-      const editor = msgRef.current.getEditor();
-      return [editor.root.innerHTML, editor.getText(), editor.root.innerText, editor.root.childNodes];
+      if (msgRef.current && msgRef.current.getEditor) {
+        const editor = msgRef.current.getEditor();
+        return [
+          editor.root.innerHTML,
+          editor.getText(),
+          editor.root.innerText,
+          editor.root.childNodes,
+        ];
+      }
     } else {
-      // Direct reference to contenteditable div
-      const contentEditableRef = msgRef.current.msgRef.current;
-      return [
-        contentEditableRef.textContent,
-        contentEditableRef.innerText,
-        contentEditableRef.cloneNode(true).childNodes,
-      ];
+      if (
+        msgRef.current &&
+        msgRef.current.msgRef &&
+        msgRef.current.msgRef.current
+      ) {
+        const contentEditableRef = msgRef.current.msgRef.current;
+        return [
+          contentEditableRef.textContent,
+          contentEditableRef.innerText,
+          contentEditableRef.cloneNode(true).childNodes,
+        ];
+      }
     }
+    return ["", "", "", []];
   };
 
   const send = () => {
@@ -197,7 +254,9 @@ function MessageInputInner(
   const handleChange = (value, delta, source, editor) => {
     const innerHTML = useQuill ? editor.root.innerHTML : value;
     const textContent = useQuill ? editor.getText() : editor.target.textContent;
-    const innerText = useQuill ? editor.root.innerText : editor.target.innerText;
+    const innerText = useQuill
+      ? editor.root.innerText
+      : editor.target.innerText;
 
     setStateValue(innerHTML);
     if (typeof sendDisabled === "undefined") {
