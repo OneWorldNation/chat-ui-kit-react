@@ -5,7 +5,7 @@ import React, {
   useImperativeHandle,
   forwardRef,
 } from "react";
-import ReactQuill, { Quill } from "react-quill";
+import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import "../../../src/index.css";
 import { noop } from "../utils";
@@ -16,6 +16,8 @@ import ContentEditable from "../ContentEditable";
 import SendButton from "../Buttons/SendButton";
 import AttachmentButton from "../Buttons/AttachmentButton";
 import PerfectScrollbar from "../Scroll";
+
+const Quill = ReactQuill.Quill;
 
 // Define custom colors including a 'remove' option for removing color
 const customColors = [
