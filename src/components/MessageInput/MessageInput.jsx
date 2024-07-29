@@ -249,21 +249,25 @@ function MessageInputInner(
 
   const handleChange = (content, delta, source, editor) => {
     if (useQuill) {
-      setStateValue(content);
+      const innerHTML = content;
+      const textContent = editor?.getText();
+      const innerText = editor?.root?.innerText;
+      const childNodes = editor?.root?.childNodes;
+
+      setStateValue(innerHTML);
+
       if (typeof sendDisabled === "undefined") {
-        setStateSendDisabled(editor.getText().trim().length === 0);
+        setStateSendDisabled(!textContent || textContent.trim().length === 0);
       }
-      onChange(
-        content,
-        editor.getText(),
-        editor.root.innerText,
-        editor.root.childNodes
-      );
+
+      onChange(innerHTML, textContent, innerText, childNodes);
     } else {
       setStateValue(content);
+
       if (typeof sendDisabled === "undefined") {
         setStateSendDisabled(content.trim().length === 0);
       }
+
       onChange(content, content, content, []);
     }
 
