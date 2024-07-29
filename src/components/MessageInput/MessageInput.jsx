@@ -7,6 +7,7 @@ import React, {
 } from "react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
+import "../../../src/index.css";
 import { noop } from "../utils";
 import PropTypes from "prop-types";
 import classNames from "classnames";
@@ -253,7 +254,7 @@ function MessageInputInner(
       const textContent = editor?.getText();
       const innerText = editor?.root?.innerText;
       const childNodes = editor?.root?.childNodes;
-
+      console.log("innerHTML");
       setStateValue(innerHTML);
 
       if (typeof sendDisabled === "undefined") {
