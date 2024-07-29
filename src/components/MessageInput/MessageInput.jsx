@@ -7,7 +7,7 @@ import React, {
 } from "react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
-import "../../../src/index.css";
+import "../../index.css";
 import { noop } from "../utils";
 import PropTypes from "prop-types";
 import classNames from "classnames";
