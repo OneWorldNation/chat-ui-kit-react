@@ -51,7 +51,7 @@ class MessageListInner extends React.Component {
       this.scrollToEnd(this.props.scrollBehavior);
     }
 
-    this.scrollRef.current.updateScroll();
+    this?.scrollRef?.current?.updateScroll();
   };
 
   handleContainerResize = () => {
@@ -76,7 +76,7 @@ class MessageListInner extends React.Component {
 
           this.lastClientHeight = list.clientHeight;
 
-          this.scrollRef.current.updateScroll();
+          this?.scrollRef?.current?.updateScroll();
         }
 
         this.resizeTicking = false;

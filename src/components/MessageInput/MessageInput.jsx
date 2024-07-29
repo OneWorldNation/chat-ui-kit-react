@@ -270,8 +270,8 @@ function MessageInputInner(
 
   // Update scroll
   useEffect(() => {
-    if (typeof scrollRef.current.updateScroll === "function") {
-      scrollRef.current.updateScroll();
+    if (typeof scrollRef?.current?.updateScroll === "function") {
+      scrollRef?.current?.updateScroll();
     }
   });
 
@@ -351,8 +351,8 @@ function MessageInputInner(
       onChange(content, content, content, []);
     }
 
-    if (typeof scrollRef.current.updateScroll === "function") {
-      scrollRef.current.updateScroll();
+    if (typeof scrollRef?.current?.updateScroll === "function") {
+      scrollRef?.current?.updateScroll();
     }
   };
 
