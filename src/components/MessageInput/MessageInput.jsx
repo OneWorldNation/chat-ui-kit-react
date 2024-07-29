@@ -150,11 +150,11 @@ const quillModules = {
       [{ color: customColors }, { background: customColors }],
       ["link"],
       [{ list: "ordered" }, { list: "bullet" }],
-      ["image", "file"],
+      ["image"],
       ["clean"],
     ],
     handlers: {
-      file: fileHandler,
+      // file: fileHandler,
       color: handleColorChange,
       background: handleBackgroundChange,
     },
@@ -174,7 +174,7 @@ const quillFormats = [
   "list",
   "bullet",
   "image",
-  "file",
+  // "file",
   // "video",
 ];
 
@@ -392,7 +392,7 @@ function MessageInputInner(
           theme="snow"
           value={stateValue}
           onChange={handleChange}
-          onKeyPress={handleKeyPress}
+          onKeyDown={handleKeyPress}
           placeholder={ph}
           readOnly={disabled}
           modules={quillModules}
