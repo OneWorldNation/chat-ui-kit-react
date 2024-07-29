@@ -1,11 +1,6 @@
-import React, {
-  Component,
-  useRef,
-  useState,
-  useEffect,
-  useImperativeHandle,
-  forwardRef,
-} from "react";
+import React, { useRef, useState, useEffect, useImperativeHandle, forwardRef } from "react";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
 import { noop } from "../utils";
 import PropTypes from "prop-types";
 import classNames from "classnames";
@@ -15,10 +10,43 @@ import SendButton from "../Buttons/SendButton";
 import AttachmentButton from "../Buttons/AttachmentButton";
 import PerfectScrollbar from "../Scroll";
 
+// Define custom colors including a 'remove' option for removing color
+const customColors = [
+  '#000000', '#e60000', '#ff9900', '#ffff00', '#008a00',
+  '#0066cc', '#9933ff', '#ffffff', '#facccc', '#ffebcc',
+  '#ffffcc', '#cce8cc', '#cce0f5', '#ebd6ff', '#bbbbbb',
+  '#f06666', '#ffc266', '#ffff66', '#66b966', '#66a3e0',
+  '#c285ff', '#888888', '#a10000', '#b26b00', '#b2b200',
+  '#006100', '#0047b2', '#6b24b2', '#444444', '#5c0000',
+  '#663d00', '#666600', '#003700', '#002966', '#3d1466', 'remove'
+];
+
+// Quill toolbar modules and formats
+const quillModules = {
+  toolbar: [
+    [{ 'header': '1'}, {'header': '2'}, { 'font': [] }],
+    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+    ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+    [{ 'color': [] }, { 'background': [] }],          // dropdown with defaults from theme
+    [{ 'align': [] }],
+    ['link', 'image', 'video'],
+    ['clean']                                         // remove formatting button
+  ]
+};
+
+const quillFormats = [
+  'header', 'font',
+  'list', 'bullet',
+  'bold', 'italic', 'underline', 'strike', 'blockquote',
+  'color', 'background',
+  'align',
+  'link', 'image', 'video'
+];
+
 // Because container depends on fancyScroll
 // it must be wrapped in additional container
 function editorContainer() {
-  class Container extends Component {
+  class Container extends React.Component {
     render() {
       const {
         props: { fancyScroll, children, forwardedRef, ...rest },
@@ -83,6 +111,7 @@ function MessageInputInner(
     attachButton,
     onAttachClick,
     sendButtonComponent,
+    useQuill,  // Add useQuill prop
     ...rest
   },
   ref
@@ -122,13 +151,18 @@ function MessageInputInner(
   });
 
   const getContent = () => {
-    // Direct reference to contenteditable div
-    const contentEditableRef = msgRef.current.msgRef.current;
-    return [
-      contentEditableRef.textContent,
-      contentEditableRef.innerText,
-      contentEditableRef.cloneNode(true).childNodes,
-    ];
+    if (useQuill) {
+      const editor = msgRef.current.getEditor();
+      return [editor.root.innerHTML, editor.getText(), editor.root.innerText, editor.root.childNodes];
+    } else {
+      // Direct reference to contenteditable div
+      const contentEditableRef = msgRef.current.msgRef.current;
+      return [
+        contentEditableRef.textContent,
+        contentEditableRef.innerText,
+        contentEditableRef.cloneNode(true).childNodes,
+      ];
+    }
   };
 
   const send = () => {
@@ -160,7 +194,11 @@ function MessageInputInner(
     }
   };
 
-  const handleChange = (innerHTML, textContent, innerText) => {
+  const handleChange = (value, delta, source, editor) => {
+    const innerHTML = useQuill ? editor.root.innerHTML : value;
+    const textContent = useQuill ? editor.getText() : editor.target.textContent;
+    const innerText = useQuill ? editor.root.innerText : editor.target.innerText;
+
     setStateValue(innerHTML);
     if (typeof sendDisabled === "undefined") {
       setStateSendDisabled(textContent.length === 0);
@@ -202,16 +240,30 @@ function MessageInputInner(
           ref={scrollRef}
           className={`${cName}__content-editor-container`}
         >
-          <ContentEditable
-            ref={msgRef}
-            className={`${cName}__content-editor`}
-            disabled={disabled}
-            placeholder={ph}
-            onKeyPress={handleKeyPress}
-            onChange={handleChange}
-            activateAfterChange={activateAfterChange}
-            value={stateValue}
-          />
+          {useQuill ? (
+            <ReactQuill
+              ref={msgRef}
+              theme="snow"
+              value={stateValue}
+              onChange={handleChange}
+              onKeyPress={handleKeyPress}
+              placeholder={ph}
+              readOnly={disabled}
+              modules={quillModules}
+              formats={quillFormats}
+            />
+          ) : (
+            <ContentEditable
+              ref={msgRef}
+              className={`${cName}__content-editor`}
+              disabled={disabled}
+              placeholder={ph}
+              onKeyPress={handleKeyPress}
+              onChange={handleChange}
+              activateAfterChange={activateAfterChange}
+              value={stateValue}
+            />
+          )}
         </EditorContainer>
       </div>
       {sendButton === true && (
@@ -299,6 +351,7 @@ MessageInput.propTypes = {
   onAttachClick: PropTypes.func,
 
   sendButtonComponent: PropTypes.Component,
+  useQuill: PropTypes.bool, // Add useQuill prop type
 };
 
 MessageInputInner.propTypes = MessageInput.propTypes;
@@ -317,6 +370,7 @@ MessageInput.defaultProps = {
   onAttachClick: noop,
   onChange: noop,
   onSend: noop,
+  useQuill: false, // Default to false
 };
 
 MessageInputInner.defaultProps = MessageInput.defaultProps;

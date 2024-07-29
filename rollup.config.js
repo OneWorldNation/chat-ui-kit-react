@@ -3,6 +3,7 @@ import commonjs from "@rollup/plugin-commonjs";
 import babel from "@rollup/plugin-babel";
 import peerDepsExternal from "rollup-plugin-peer-deps-external";
 import { terser } from "rollup-plugin-terser";
+import postcss from "rollup-plugin-postcss"; // Import the postcss plugin
 
 export default [
   // browser-friendly UMD build
@@ -19,13 +20,15 @@ export default [
         "prop-types": "PropTypes",
       },
     },
-
     plugins: [
       peerDepsExternal(),
       resolve({
         extensions: [".mjs", ".js", ".json", ".node", ".jsx"],
       }),
       commonjs(),
+      postcss({
+        extensions: [".css"], // Add the postcss plugin to handle CSS imports
+      }),
       babel({
         exclude: "node_modules/**",
         presets: ["@babel/preset-env", "@babel/preset-react"],
