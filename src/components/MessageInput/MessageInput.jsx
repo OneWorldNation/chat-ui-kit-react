@@ -195,29 +195,25 @@ function MessageInputInner(
   });
 
   const getContent = () => {
-    if (useQuill) {
-      if (msgRef.current && msgRef.current.getEditor) {
-        const editor = msgRef.current.getEditor();
-        return [
-          editor.root.innerHTML,
-          editor.getText(),
-          editor.root.innerText,
-          editor.root.childNodes,
-        ];
-      }
-    } else {
-      if (
-        msgRef.current &&
-        msgRef.current.msgRef &&
-        msgRef.current.msgRef.current
-      ) {
-        const contentEditableRef = msgRef.current.msgRef.current;
-        return [
-          contentEditableRef.textContent,
-          contentEditableRef.innerText,
-          contentEditableRef.cloneNode(true).childNodes,
-        ];
-      }
+    if (useQuill && msgRef.current && msgRef.current.getEditor) {
+      const editor = msgRef.current.getEditor();
+      return [
+        editor.root.innerHTML,
+        editor.getText(),
+        editor.root.innerText,
+        editor.root.childNodes,
+      ];
+    } else if (
+      msgRef.current &&
+      msgRef.current.msgRef &&
+      msgRef.current.msgRef.current
+    ) {
+      const contentEditableRef = msgRef.current.msgRef.current;
+      return [
+        contentEditableRef.textContent,
+        contentEditableRef.innerText,
+        contentEditableRef.cloneNode(true).childNodes,
+      ];
     }
     return ["", "", "", []];
   };
@@ -251,25 +247,29 @@ function MessageInputInner(
     }
   };
 
-  const handleChange = (value, delta, source, editor) => {
-    const innerHTML = useQuill ? editor.root.innerHTML : value;
-    const textContent = useQuill ? editor.getText() : editor.target.textContent;
-    const innerText = useQuill
-      ? editor.root.innerText
-      : editor.target.innerText;
-
-    setStateValue(innerHTML);
-    if (typeof sendDisabled === "undefined") {
-      setStateSendDisabled(textContent.length === 0);
+  const handleChange = (content, delta, source, editor) => {
+    if (useQuill) {
+      setStateValue(content);
+      if (typeof sendDisabled === "undefined") {
+        setStateSendDisabled(editor.getText().trim().length === 0);
+      }
+      onChange(
+        content,
+        editor.getText(),
+        editor.root.innerText,
+        editor.root.childNodes
+      );
+    } else {
+      setStateValue(content);
+      if (typeof sendDisabled === "undefined") {
+        setStateSendDisabled(content.trim().length === 0);
+      }
+      onChange(content, content, content, []);
     }
 
     if (typeof scrollRef.current.updateScroll === "function") {
       scrollRef.current.updateScroll();
     }
-
-    const content = getContent();
-
-    onChange(innerHTML, textContent, innerText, content[2]);
   };
 
   const cName = `${prefix}-message-input`,
