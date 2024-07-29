@@ -27,7 +27,7 @@ export interface MessageInputProps {
   attachDisabled?: boolean;
   onAttachClick?: (evt: MouseEvent<HTMLButtonElement>) => void;
   sendButtonComponent: any;
-  useQuill: boolean;
+  useQuill?: boolean;
 }
 
 export declare const MessageInput: (

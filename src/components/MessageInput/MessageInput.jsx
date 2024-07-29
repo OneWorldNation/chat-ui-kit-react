@@ -376,26 +376,25 @@ function MessageInputInner(
           />
         </div>
       )}
-
-      <div className={`${cName}__content-editor-wrapper`}>
-        <EditorContainer
-          fancyScroll={fancyScroll}
-          ref={scrollRef}
-          className={`${cName}__content-editor-container`}
-        >
-          {useQuill ? (
-            <ReactQuill
-              ref={msgRef}
-              theme="snow"
-              value={stateValue}
-              onChange={handleChange}
-              onKeyPress={handleKeyPress}
-              placeholder={ph}
-              readOnly={disabled}
-              modules={quillModules}
-              formats={quillFormats}
-            />
-          ) : (
+      {useQuill ? (
+        <ReactQuill
+          ref={msgRef}
+          theme="snow"
+          value={stateValue}
+          onChange={handleChange}
+          onKeyPress={handleKeyPress}
+          placeholder={ph}
+          readOnly={disabled}
+          modules={quillModules}
+          formats={quillFormats}
+        />
+      ) : (
+        <div className={`${cName}__content-editor-wrapper`}>
+          <EditorContainer
+            fancyScroll={fancyScroll}
+            ref={scrollRef}
+            className={`${cName}__content-editor-container`}
+          >
             <ContentEditable
               ref={msgRef}
               className={`${cName}__content-editor`}
@@ -406,9 +405,9 @@ function MessageInputInner(
               activateAfterChange={activateAfterChange}
               value={stateValue}
             />
-          )}
-        </EditorContainer>
-      </div>
+          </EditorContainer>
+        </div>
+      )}
       {sendButton === true && (
         <div className={`${cName}__tools`}>
           <SendButton
