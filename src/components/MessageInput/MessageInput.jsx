@@ -5,7 +5,7 @@ import React, {
   useImperativeHandle,
   forwardRef,
 } from "react";
-import ReactQuill from "react-quill";
+import ReactQuill, { Quill } from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import "../../../src/index.css";
 import { noop } from "../utils";
@@ -57,34 +57,112 @@ const customColors = [
   "remove",
 ];
 
-// Quill toolbar modules and formats
+const Font = Quill.import("formats/font");
+Font.whitelist = [
+  "arial",
+  "comic-sans",
+  "courier-new",
+  "georgia",
+  "helvetica",
+  "lucida",
+  "times-new-roman",
+  "verdana",
+];
+
+Quill.register(Font, true);
+
+// Register the custom handlers
+const videoHandler = function () {
+  const input = document.createElement("input");
+  input.setAttribute("type", "file");
+  input.setAttribute("accept", "video/*");
+  input.click();
+  input.onchange = () => {
+    const file = input.files ? input.files[0] : null;
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const range = this.quill.getSelection(true);
+        this.quill.editor.insertEmbed(range.index, "video", reader.result);
+        this.quill.setSelection(range.index + 1);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+};
+
+const fileHandler = function () {
+  const input = document.createElement("input");
+  input.setAttribute("type", "file");
+  input.setAttribute("accept", "*");
+  input.click();
+  input.onchange = () => {
+    const file = input.files ? input.files[0] : null;
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const range = this.quill.getSelection(true);
+        this.quill.editor.insertEmbed(range.index, "link", reader.result);
+        this.quill.setSelection(range.index + 1);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+};
+
+const handleColorChange = function (value) {
+  const editor = this.quill;
+  if (value === "remove") {
+    editor.format("color", false);
+  } else {
+    editor.format("color", value);
+  }
+};
+
+const handleBackgroundChange = function (value) {
+  const editor = this.quill;
+  if (value === "remove") {
+    editor.format("background", false);
+  } else {
+    editor.format("background", value);
+  }
+};
+
 const quillModules = {
-  toolbar: [
-    [{ header: "1" }, { header: "2" }, { font: [] }],
-    [{ list: "ordered" }, { list: "bullet" }],
-    ["bold", "italic", "underline", "strike", "blockquote"],
-    [{ color: [] }, { background: [] }], // dropdown with defaults from theme
-    [{ align: [] }],
-    ["link", "image", "video"],
-    ["clean"], // remove formatting button
-  ],
+  toolbar: {
+    container: [
+      [{ font: Font.whitelist }],
+      [{ size: ["small", false, "large", "huge"] }],
+      ["bold", "italic", "underline", "strike"],
+      [{ color: customColors }, { background: customColors }],
+      ["link"],
+      [{ list: "ordered" }, { list: "bullet" }],
+      ["image", "file", "video"],
+      ["clean"],
+    ],
+    handlers: {
+      video: videoHandler,
+      file: fileHandler,
+      color: handleColorChange,
+      background: handleBackgroundChange,
+    },
+  },
 };
 
 const quillFormats = [
-  "header",
   "font",
-  "list",
-  "bullet",
+  "size",
   "bold",
   "italic",
   "underline",
   "strike",
-  "blockquote",
   "color",
   "background",
-  "align",
   "link",
+  "list",
+  "bullet",
   "image",
+  "file",
   "video",
 ];
 
@@ -254,7 +332,6 @@ function MessageInputInner(
       const textContent = editor?.getText();
       const innerText = editor?.root?.innerText;
       const childNodes = editor?.root?.childNodes;
-      console.log("innerHTML");
       setStateValue(innerHTML);
 
       if (typeof sendDisabled === "undefined") {
