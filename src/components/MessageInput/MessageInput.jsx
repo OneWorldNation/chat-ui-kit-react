@@ -282,7 +282,7 @@ function MessageInputInner(
 ) {
   const scrollRef = useRef();
   const msgRef = useRef();
-  const quillRef = useRef < ReactQuill > null;
+  // const quillRef = useRef < ReactQuill > null;
   const [stateValue, setStateValue] = useControllableState(value, "");
   const [stateSendDisabled, setStateSendDisabled] = useControllableState(
     sendDisabled,
@@ -333,14 +333,14 @@ function MessageInputInner(
     input.click();
     input.onchange = () => {
       const file = input.files ? input.files[0] : null;
-      if (file && quillRef.current) {
+      if (file && msgRef.current) {
         if (!allowedTypes.includes(file.type)) {
           alert(
             "Invalid file type. Please upload a PDF, CSV, Doc, DocX, JPEG, PNG, or XLSX file."
           );
           return;
         }
-        const editor = quillRef.current.getEditor();
+        const editor = msgRef.current.getEditor();
         const range = editor.getSelection();
         const cursorPosition = range ? range.index : editor.getLength();
 
@@ -392,15 +392,15 @@ function MessageInputInner(
         setAttachedFiles((prevFiles) => [...prevFiles, file]);
       }
     };
-  }, [quillRef]);
+  }, [msgRef]);
 
   useEffect(() => {
-    if (quillRef.current) {
-      const quillEditor = quillRef.current.getEditor();
+    if (msgRef?.current && useQuill) {
+      const quillEditor = msgRef?.current?.getEditor();
       const toolbar = quillEditor.getModule("toolbar");
       toolbar.addHandler("file", fileHandler);
     }
-  }, [quillRef, fileHandler]);
+  }, [msgRef, fileHandler, useQuill]);
 
   const getContent = () => {
     if (useQuill && msgRef.current && msgRef.current.getEditor) {
@@ -484,10 +484,10 @@ function MessageInputInner(
   };
 
   useEffect(() => {
-    if (quillIcons) {
+    if (quillIcons && useQuill) {
       icons = quillIcons;
     }
-  }, [quillRef, quillIcons]);
+  }, [msgRef, quillIcons, useQuill]);
 
   // icons.file = ReactDOMServer.renderToStaticMarkup(<AttachDark />);
 
