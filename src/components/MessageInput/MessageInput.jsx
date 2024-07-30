@@ -4,6 +4,8 @@ import React, {
   useEffect,
   useImperativeHandle,
   forwardRef,
+  useCallback,
+  useMemo,
 } from "react";
 import ReactQuill from "react-quill";
 // import "react-quill/dist/quill.snow.css";
@@ -17,6 +19,51 @@ import SendButton from "../Buttons/SendButton";
 import AttachmentButton from "../Buttons/AttachmentButton";
 import PerfectScrollbar from "../Scroll";
 
+function truncateWords(words, maxLength) {
+  return words.length > maxLength
+    ? `${words.slice(0, maxLength - 3)}...`
+    : words;
+}
+
+const mimeTypeToShortForm = {
+  "text/csv": "CSV",
+  "application/pdf": "PDF",
+  "image/jpeg": "JPG",
+  "image/png": "PNG",
+  "text/plain": "TXT",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "XLSX",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+    "DOCX",
+  "application/zip": "ZIP",
+  "application/x-rar-compressed": "RAR",
+  "application/x-7z-compressed": "7Z",
+  "application/x-gzip": "GZ",
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation":
+    "PPT",
+  "application/msword": "DOC",
+  "application/vnd.ms-excel": "XLS",
+  "application/vnd.ms-powerpoint": "PPT",
+  "application/vnd.oasis.opendocument.text": "ODT",
+  "application/vnd.oasis.opendocument.spreadsheet": "ODS",
+  "image/gif": "GIF",
+  "image/svg+xml": "SVG",
+  "image/tiff": "TIFF",
+  "image/bmp": "BMP",
+  "image/webp": "WEBP",
+  "image/heic": "HEIC",
+  "image/heif": "HEIF",
+  "image/avif": "AVIF",
+  "image/ico": "ICO",
+  "image/vnd.microsoft.icon": "ICO",
+  "image/x-icon": "ICO",
+  "image/vnd.djvu": "DJVU",
+  // Add other MIME types and their short forms as needed
+};
+
+const convertFileTypeToShortForm = (fileType) => {
+  return mimeTypeToShortForm[fileType] || "File";
+};
+
 const Quill = ReactQuill.Quill;
 
 const Parchment = Quill.import("parchment");
@@ -29,6 +76,37 @@ const SizeStyle = new Parchment.Attributor.Class(
   }
 );
 Quill.register(SizeStyle, true);
+
+const BlockEmbed = Quill.import("blots/block/embed");
+
+class FileBlot extends BlockEmbed {
+  static blotName = "file";
+  static tagName = "div";
+  static className = "ql-file";
+
+  static create(value) {
+    const node = super.create();
+    node.setAttribute("data-file-name", value.name);
+    node.setAttribute("data-file-type", value.type);
+    node.setAttribute("data-file-size", value.size);
+    node.innerHTML = `
+      <strong>${value.name}</strong>
+      <div>${value.type}</div>
+      <div>${(value.size / 1024 / 1024).toFixed(2)} MB</div>
+    `;
+    return node;
+  }
+
+  static value(node) {
+    return {
+      name: node.getAttribute("data-file-name"),
+      type: node.getAttribute("data-file-type"),
+      size: node.getAttribute("data-file-size"),
+    };
+  }
+}
+
+Quill.register(FileBlot);
 
 // Define custom colors including a 'remove' option for removing color
 const customColors = [
@@ -104,24 +182,7 @@ const videoHandler = function () {
   };
 };
 
-const fileHandler = function () {
-  const input = document.createElement("input");
-  input.setAttribute("type", "file");
-  input.setAttribute("accept", "*");
-  input.click();
-  input.onchange = () => {
-    const file = input.files ? input.files[0] : null;
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const range = this.quill.getSelection(true);
-        this.quill.editor.insertEmbed(range.index, "link", reader.result);
-        this.quill.setSelection(range.index + 1);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-};
+//
 
 const handleColorChange = function (value) {
   const editor = this.quill;
@@ -141,43 +202,6 @@ const handleBackgroundChange = function (value) {
   }
 };
 
-const quillModules = {
-  toolbar: {
-    container: [
-      [{ font: Font.whitelist }],
-      [{ size: ["small", false, "large", "huge"] }],
-      ["bold", "italic", "underline", "strike"],
-      [{ color: customColors }, { background: customColors }],
-      ["link"],
-      [{ list: "ordered" }, { list: "bullet" }],
-      ["image"],
-      ["clean"],
-    ],
-    handlers: {
-      // file: fileHandler,
-      color: handleColorChange,
-      background: handleBackgroundChange,
-    },
-  },
-};
-
-const quillFormats = [
-  "font",
-  "size",
-  "bold",
-  "italic",
-  "underline",
-  "strike",
-  "color",
-  "background",
-  "link",
-  "list",
-  "bullet",
-  "image",
-  // "file",
-  // "video",
-];
-
 // Because container depends on fancyScroll
 // it must be wrapped in additional container
 function editorContainer() {
@@ -191,7 +215,7 @@ function editorContainer() {
         <>
           {fancyScroll === true && (
             <PerfectScrollbar
-              ref={(elRef) => (forwardedRef.current = elRef)}
+              ref={(elRef) => (forwardedRef?.current = elRef)}
               {...rest}
               options={{ suppressScrollX: true }}
             >
@@ -228,6 +252,8 @@ const useControllableState = (value, initialValue) => {
   ];
 };
 
+let icons = ReactQuill.Quill.import("ui/icons");
+
 function MessageInputInner(
   {
     value,
@@ -247,17 +273,22 @@ function MessageInputInner(
     onAttachClick,
     sendButtonComponent,
     useQuill, // Add useQuill prop
+    getQuillFileIcon,
+    getQuillFileDeleteIcon,
+    quillIcons,
     ...rest
   },
   ref
 ) {
   const scrollRef = useRef();
   const msgRef = useRef();
+  const quillRef = useRef < ReactQuill > null;
   const [stateValue, setStateValue] = useControllableState(value, "");
   const [stateSendDisabled, setStateSendDisabled] = useControllableState(
     sendDisabled,
     true
   );
+  const [attachedFiles, setAttachedFiles] = useState([]);
 
   // Public API
   const focus = () => {
@@ -284,6 +315,92 @@ function MessageInputInner(
       scrollRef?.current?.updateScroll();
     }
   });
+
+  const fileHandler = useCallback(() => {
+    const allowedTypes = [
+      "application/pdf",
+      "text/csv",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "image/jpeg",
+      "image/png",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    ];
+    const allowedExtensions = ".pdf,.csv,.doc,.docx,.jpeg,.jpg,.png,.xlsx";
+    const input = document.createElement("input");
+    input.setAttribute("type", "file");
+    input.setAttribute("accept", allowedExtensions);
+    input.click();
+    input.onchange = () => {
+      const file = input.files ? input.files[0] : null;
+      if (file && quillRef.current) {
+        if (!allowedTypes.includes(file.type)) {
+          alert(
+            "Invalid file type. Please upload a PDF, CSV, Doc, DocX, JPEG, PNG, or XLSX file."
+          );
+          return;
+        }
+        const editor = quillRef.current.getEditor();
+        const range = editor.getSelection();
+        const cursorPosition = range ? range.index : editor.getLength();
+
+        // Insert the file embed at the end of the editor container
+        const bottomContainer = document.getElementById("bottom-container");
+        if (bottomContainer) {
+          const fileEmbed = document.createElement("div");
+          fileEmbed.className = "ql-file-embed-box";
+          const fileId = `file-${Date.now()}`; // Generate a unique ID for the file
+          fileEmbed.id = fileId;
+          fileEmbed.innerHTML = `
+          <div class="file-box">
+            <div class="ql-file-icon">${getQuillFileIcon(file.type)}</div>
+            <div class="ql-file-info">
+              <div class="ql-file-name">${truncateWords(file.name, 13)}</div>
+              <div class="ql-file-meta">
+                <div>${convertFileTypeToShortForm(file.type)}</div>
+                <div class="file-meta-gray-dot"></div>
+                <div>${(file.size / 1024 / 1024).toFixed(2)} MB</div>
+              </div>
+            </div>
+            <div class="ql-file-close" data-file-id="${fileId}">${getQuillFileDeleteIcon()}</div>
+          </div>
+        `;
+          bottomContainer.appendChild(fileEmbed);
+
+          // Add click event listener for delete icon
+          const deleteIcon = fileEmbed.querySelector(".ql-file-close");
+          if (deleteIcon) {
+            deleteIcon.addEventListener("click", (event) => {
+              const target = event?.currentTarget;
+              const fileId = target.getAttribute("data-file-id");
+              if (fileId) {
+                const fileElement = document.getElementById(fileId);
+                if (fileElement) {
+                  fileElement.remove();
+                  setAttachedFiles((prevFiles) =>
+                    prevFiles.filter((f) => f.name !== file.name)
+                  );
+                }
+              }
+            });
+          }
+        }
+
+        // Restore the cursor position
+        editor.setSelection(cursorPosition);
+
+        setAttachedFiles((prevFiles) => [...prevFiles, file]);
+      }
+    };
+  }, [quillRef]);
+
+  useEffect(() => {
+    if (quillRef.current) {
+      const quillEditor = quillRef.current.getEditor();
+      const toolbar = quillEditor.getModule("toolbar");
+      toolbar.addHandler("file", fileHandler);
+    }
+  }, [quillRef, fileHandler]);
 
   const getContent = () => {
     if (useQuill && msgRef.current && msgRef.current.getEditor) {
@@ -366,6 +483,55 @@ function MessageInputInner(
     }
   };
 
+  useEffect(() => {
+    if (quillIcons) {
+      icons = quillIcons;
+    }
+  }, [quillRef, quillIcons]);
+
+  // icons.file = ReactDOMServer.renderToStaticMarkup(<AttachDark />);
+
+  const quillModules = useMemo(
+    () => ({
+      toolbar: {
+        container: [
+          [{ font: Font.whitelist }], // font dropdown
+          [{ size: ["small", false, "large", "huge"] }], // Font size
+          ["bold", "italic", "underline", "strike"],
+          [{ color: customColors }, { background: customColors }], // Text color and highlight
+          ["link"],
+          [{ list: "ordered" }, { list: "bullet" }],
+          ["image"],
+          ["clean"],
+          ["file"],
+        ],
+        handlers: {
+          file: fileHandler,
+          color: handleColorChange,
+          background: handleBackgroundChange,
+        },
+      },
+    }),
+    [icons, quillIcons, fileHandler, handleColorChange, handleBackgroundChange]
+  );
+
+  const quillFormats = [
+    "font",
+    "size",
+    "bold",
+    "italic",
+    "underline",
+    "strike",
+    "color",
+    "background",
+    "link",
+    "list",
+    "bullet",
+    "image",
+    "file",
+    // "video",
+  ];
+
   const cName = `${prefix}-message-input`,
     ph = typeof placeholder === "string" ? placeholder : "";
 
@@ -387,17 +553,36 @@ function MessageInputInner(
         </div>
       )}
       {useQuill ? (
-        <ReactQuill
-          ref={msgRef}
-          theme="snow"
-          value={stateValue}
-          onChange={handleChange}
-          onKeyDown={handleKeyPress}
-          placeholder={ph}
-          readOnly={disabled}
-          modules={quillModules}
-          formats={quillFormats}
-        />
+        <div
+          borderRadius="md"
+          overflow="auto"
+          position="relative"
+          // style={{ height: "300px", border: "inherit" }}
+          display={"flex"}
+          flexDirection={"column"}
+        >
+          <ReactQuill
+            ref={msgRef}
+            theme="snow"
+            value={stateValue}
+            onChange={handleChange}
+            onKeyDown={handleKeyPress}
+            placeholder={ph}
+            readOnly={disabled}
+            modules={quillModules}
+            formats={quillFormats}
+          />
+          <div
+            id="bottom-container"
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              paddingBottom: "12px",
+              gap: "8px",
+              maxWidth: "100%",
+            }}
+          />
+        </div>
       ) : (
         <div className={`${cName}__content-editor-wrapper`}>
           <EditorContainer
@@ -504,6 +689,9 @@ MessageInput.propTypes = {
 
   sendButtonComponent: PropTypes.Component,
   useQuill: PropTypes.bool, // Add useQuill prop type
+  getQuillFileIcon: PropTypes.func,
+  getQuillFileDeleteIcon: PropTypes.func,
+  quillIcons: PropTypes.any,
 };
 
 MessageInputInner.propTypes = MessageInput.propTypes;
@@ -523,6 +711,9 @@ MessageInput.defaultProps = {
   onChange: noop,
   onSend: noop,
   useQuill: false, // Default to false
+  getQuillFileIcon: noop,
+  getQuillFileDeleteIcon: noop,
+  quillIcons: {},
 };
 
 MessageInputInner.defaultProps = MessageInput.defaultProps;
