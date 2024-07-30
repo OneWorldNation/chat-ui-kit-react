@@ -31,6 +31,8 @@ export interface MessageInputProps {
   getQuillFileIcon?: (fileType: string) => any;
   getQuillFileDeleteIcon?: () => any;
   quillIcons?: any;
+  onFileUpload?: (file: File, currentFiles: File[]) => void;
+  onFileRemove?: (fileId: string, currentFiles?: File[]) => void;
 }
 
 export declare const MessageInput: (

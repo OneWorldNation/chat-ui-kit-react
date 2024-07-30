@@ -276,6 +276,8 @@ function MessageInputInner(
     getQuillFileIcon,
     getQuillFileDeleteIcon,
     quillIcons,
+    onFileUpload,
+    onFileRemove,
     ...rest
   },
   ref
@@ -380,6 +382,12 @@ function MessageInputInner(
                   setAttachedFiles((prevFiles) =>
                     prevFiles.filter((f) => f.name !== file.name)
                   );
+                  if (onFileRemove) {
+                    onFileRemove(
+                      fileId,
+                      attachedFiles.filter((f) => f.name !== file.name)
+                    );
+                  }
                 }
               }
             });
@@ -390,6 +398,9 @@ function MessageInputInner(
         editor.setSelection(cursorPosition);
 
         setAttachedFiles((prevFiles) => [...prevFiles, file]);
+        if (onFileUpload) {
+          onFileUpload(file, [...attachedFiles, file]);
+        }
       }
     };
   }, [msgRef]);
@@ -578,6 +589,7 @@ function MessageInputInner(
               display: "flex",
               flexWrap: "wrap",
               paddingBottom: "12px",
+              padding: "12px",
               gap: "8px",
               maxWidth: "100%",
             }}
@@ -692,6 +704,8 @@ MessageInput.propTypes = {
   getQuillFileIcon: PropTypes.func,
   getQuillFileDeleteIcon: PropTypes.func,
   quillIcons: PropTypes.any,
+  onFileUpload: PropTypes.func,
+  onFileRemove: PropTypes.func,
 };
 
 MessageInputInner.propTypes = MessageInput.propTypes;
@@ -714,6 +728,8 @@ MessageInput.defaultProps = {
   getQuillFileIcon: noop,
   getQuillFileDeleteIcon: noop,
   quillIcons: {},
+  onFileUpload: noop,
+  onFileRemove: noop,
 };
 
 MessageInputInner.defaultProps = MessageInput.defaultProps;
