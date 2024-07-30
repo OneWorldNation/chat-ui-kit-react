@@ -28,6 +28,9 @@ export interface MessageInputProps {
   onAttachClick?: (evt: MouseEvent<HTMLButtonElement>) => void;
   sendButtonComponent: any;
   useQuill?: boolean;
+  getQuillFileIcon?: (fileType: string) => any;
+  getQuillFileDeleteIcon?: () => any;
+  quillIcons?: any;
 }
 
 export declare const MessageInput: (
