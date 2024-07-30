@@ -215,7 +215,7 @@ function editorContainer() {
         <>
           {fancyScroll === true && (
             <PerfectScrollbar
-              ref={(elRef) => (forwardedRef?.current = elRef)}
+              ref={(elRef) => (forwardedRef.current = elRef)}
               {...rest}
               options={{ suppressScrollX: true }}
             >
