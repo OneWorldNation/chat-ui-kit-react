@@ -278,6 +278,7 @@ function MessageInputInner(
     quillIcons,
     onFileUpload,
     onFileRemove,
+    autoFocusQuill,
     ...rest
   },
   ref
@@ -314,11 +315,11 @@ function MessageInputInner(
   useEffect(() => {
     if (msgRef?.current) {
       const editor = msgRef?.current?.getEditor();
-      if (editor) {
+      if (editor && autoFocusQuill) {
         editor.focus();
       }
     }
-  }, [msgRef]);
+  }, [msgRef, autoFocusQuill]);
 
   // Update scroll
   useEffect(() => {
@@ -579,6 +580,7 @@ function MessageInputInner(
             overflow: "hidden",
             display: "flex",
             flexDirection: "column",
+            position: "relative",
           }}
           // style={{ height: "300px", border: "inherit" }}
         >
@@ -716,6 +718,7 @@ MessageInput.propTypes = {
   quillIcons: PropTypes.any,
   onFileUpload: PropTypes.func,
   onFileRemove: PropTypes.func,
+  autoFocusQuill: PropTypes.bool,
 };
 
 MessageInputInner.propTypes = MessageInput.propTypes;
@@ -740,6 +743,7 @@ MessageInput.defaultProps = {
   quillIcons: {},
   onFileUpload: noop,
   onFileRemove: noop,
+  autoFocusQuill: false,
 };
 
 MessageInputInner.defaultProps = MessageInput.defaultProps;

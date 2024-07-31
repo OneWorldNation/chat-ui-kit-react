@@ -33,6 +33,7 @@ export interface MessageInputProps {
   quillIcons?: any;
   onFileUpload?: (file: File, currentFiles: File[]) => void;
   onFileRemove?: (fileId: string, currentFiles?: File[]) => void;
+  autoFocusQuill?: boolean;
 }
 
 export declare const MessageInput: (
