@@ -565,9 +565,10 @@ function MessageInputInner(
       )}
       {useQuill ? (
         <div
-          borderRadius="md"
-          overflow="auto"
-          position="relative"
+          style={{
+            borderRadius: "md",
+            overflow: "auto",
+          }}
           // style={{ height: "300px", border: "inherit" }}
           display={"flex"}
           flexDirection={"column"}
