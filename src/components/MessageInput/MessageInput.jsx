@@ -311,6 +311,15 @@ function MessageInputInner(
     }
   }, []);
 
+  useEffect(() => {
+    if (msgRef?.current) {
+      const editor = msgRef?.current?.getEditor();
+      if (editor) {
+        editor.focus();
+      }
+    }
+  }, [msgRef]);
+
   // Update scroll
   useEffect(() => {
     if (typeof scrollRef?.current?.updateScroll === "function") {
