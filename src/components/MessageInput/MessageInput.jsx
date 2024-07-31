@@ -576,11 +576,11 @@ function MessageInputInner(
         <div
           style={{
             borderRadius: "md",
-            overflow: "auto",
+            overflow: "hidden",
+            display: "flex",
+            flexDirection: "column",
           }}
           // style={{ height: "300px", border: "inherit" }}
-          display={"flex"}
-          flexDirection={"column"}
         >
           <ReactQuill
             ref={msgRef}
