@@ -627,8 +627,23 @@ function MessageInputInner(
           </EditorContainer>
         </div>
       )}
+      {/* eslint-disable */}
       {sendButton === true && (
-        <div className={`${cName}__tools`}>
+        <div
+          className={`${cName}__tools`}
+          onClick={
+            useQuill && msgRef?.current
+              ? () => {
+                  if (msgRef?.current) {
+                    const editor = msgRef?.current?.getEditor();
+                    if (editor) {
+                      editor.focus();
+                    }
+                  }
+                }
+              : undefined
+          }
+        >
           <SendButton
             onClick={send}
             disabled={disabled === true || stateSendDisabled === true}
@@ -637,6 +652,7 @@ function MessageInputInner(
           </SendButton>
         </div>
       )}
+      {/* eslint-enable */}
     </div>
   );
 }
