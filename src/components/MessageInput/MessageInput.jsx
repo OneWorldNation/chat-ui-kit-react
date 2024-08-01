@@ -630,6 +630,9 @@ function MessageInputInner(
       {sendButton === true && (
         <div
           className={`${cName}__tools any`}
+          style={{
+            paddingBottom: useQuill ? 0 : "10px",
+          }}
           onClick={
             useQuill
               ? () => {
