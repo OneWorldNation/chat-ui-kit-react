@@ -636,8 +636,6 @@ function MessageInputInner(
           onClick={
             useQuill
               ? () => {
-                  alert();
-                  console.log("msgRef===>", msgRef);
                   if (msgRef?.current) {
                     const editor = msgRef?.current?.getEditor();
                     if (editor) {
