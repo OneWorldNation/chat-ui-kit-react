@@ -524,10 +524,10 @@ function MessageInputInner(
           [{ list: "ordered" }, { list: "bullet" }],
           ["image"],
           ["clean"],
-          ["file"],
+          // ["file"],
         ],
         handlers: {
-          file: fileHandler,
+          // file: fileHandler,
           color: handleColorChange,
           background: handleBackgroundChange,
         },
@@ -549,7 +549,6 @@ function MessageInputInner(
     "list",
     "bullet",
     "image",
-    "file",
     // "video",
   ];
 
@@ -630,10 +629,12 @@ function MessageInputInner(
       {/* eslint-disable */}
       {sendButton === true && (
         <div
-          className={`${cName}__tools`}
+          className={`${cName}__tools any`}
           onClick={
             useQuill && msgRef?.current
               ? () => {
+                  alert();
+                  console.log("msgRef===>", msgRef);
                   if (msgRef?.current) {
                     const editor = msgRef?.current?.getEditor();
                     if (editor) {
