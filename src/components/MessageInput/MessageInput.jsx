@@ -631,7 +631,7 @@ function MessageInputInner(
         <div
           className={`${cName}__tools any`}
           onClick={
-            useQuill && msgRef?.current
+            useQuill
               ? () => {
                   alert();
                   console.log("msgRef===>", msgRef);
