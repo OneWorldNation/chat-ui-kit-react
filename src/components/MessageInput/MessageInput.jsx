@@ -292,6 +292,7 @@ function MessageInputInner(
     true
   );
   const [attachedFiles, setAttachedFiles] = useState([]);
+  const sendTimeoutRef = useRef(null);
 
   // Public API
   const focus = () => {
@@ -460,7 +461,9 @@ function MessageInputInner(
       }
 
       const content = getContent();
-
+      if (content[1]?.trim().length === 0) {
+        return;
+      }
       onSend(stateValue, content[0], content[1], content[2]);
     }
   };
@@ -469,7 +472,7 @@ function MessageInputInner(
     if (
       evt.key === "Enter" &&
       evt.shiftKey === false &&
-      sendOnReturnDisabled === false
+      !sendOnReturnDisabled
     ) {
       evt.preventDefault();
       send();
@@ -514,6 +517,16 @@ function MessageInputInner(
 
   const quillModules = useMemo(
     () => ({
+      keyboard: {
+        bindings: {
+          enter: {
+            key: 13,
+            handler: (range, context) => {
+              return false;
+            },
+          },
+        },
+      },
       toolbar: {
         container: [
           [{ font: Font.whitelist }], // font dropdown
