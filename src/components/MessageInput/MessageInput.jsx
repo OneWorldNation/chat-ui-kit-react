@@ -529,8 +529,8 @@ function MessageInputInner(
       },
       toolbar: {
         container: [
-          [{ font: Font.whitelist }], // font dropdown
-          [{ size: ["small", false, "large", "huge"] }], // Font size
+          // [{ font: Font.whitelist }], // font dropdown
+          // [{ size: ["small", false, "large", "huge"] }], // Font size
           ["bold", "italic", "underline", "strike"],
           [{ color: customColors }, { background: customColors }], // Text color and highlight
           ["link"],
@@ -550,8 +550,8 @@ function MessageInputInner(
   );
 
   const quillFormats = [
-    "font",
-    "size",
+    // "font",
+    // "size",
     "bold",
     "italic",
     "underline",
