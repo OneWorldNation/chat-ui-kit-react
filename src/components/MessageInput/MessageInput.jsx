@@ -279,10 +279,12 @@ function MessageInputInner(
     onFileUpload,
     onFileRemove,
     autoFocusQuill,
+    customEditor,
     ...rest
   },
   ref
 ) {
+  console.log("MessageInput", value);
   const scrollRef = useRef();
   const msgRef = useRef();
   // const quillRef = useRef < ReactQuill > null;
@@ -313,14 +315,14 @@ function MessageInputInner(
     }
   }, []);
 
-  useEffect(() => {
-    if (msgRef?.current) {
-      const editor = msgRef?.current?.getEditor();
-      if (editor && autoFocusQuill) {
-        editor.focus();
-      }
-    }
-  }, [msgRef, autoFocusQuill]);
+  // useEffect(() => {
+  //   if (msgRef?.current) {
+  //     const editor = msgRef?.current?.getEditor();
+  //     if (editor && autoFocusQuill) {
+  //       editor.focus();
+  //     }
+  //   }
+  // }, [msgRef, autoFocusQuill]);
 
   // Update scroll
   useEffect(() => {
@@ -329,110 +331,12 @@ function MessageInputInner(
     }
   });
 
-  const fileHandler = useCallback(() => {
-    const allowedTypes = [
-      "application/pdf",
-      "text/csv",
-      "application/msword",
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      "image/jpeg",
-      "image/png",
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    ];
-    const allowedExtensions = ".pdf,.csv,.doc,.docx,.jpeg,.jpg,.png,.xlsx";
-    const input = document.createElement("input");
-    input.setAttribute("type", "file");
-    input.setAttribute("accept", allowedExtensions);
-    input.click();
-    input.onchange = () => {
-      const file = input.files ? input.files[0] : null;
-      if (file && msgRef.current) {
-        if (!allowedTypes.includes(file.type)) {
-          alert(
-            "Invalid file type. Please upload a PDF, CSV, Doc, DocX, JPEG, PNG, or XLSX file."
-          );
-          return;
-        }
-        const editor = msgRef.current.getEditor();
-        const range = editor.getSelection();
-        const cursorPosition = range ? range.index : editor.getLength();
-
-        // Insert the file embed at the end of the editor container
-        const bottomContainer = document.getElementById("bottom-container");
-        if (bottomContainer) {
-          const fileEmbed = document.createElement("div");
-          fileEmbed.className = "ql-file-embed-box";
-          const fileId = `file-${Date.now()}`; // Generate a unique ID for the file
-          fileEmbed.id = fileId;
-          fileEmbed.innerHTML = `
-          <div class="file-box">
-            <div class="ql-file-icon">${getQuillFileIcon(file.type)}</div>
-            <div class="ql-file-info">
-              <div class="ql-file-name">${truncateWords(file.name, 13)}</div>
-              <div class="ql-file-meta">
-                <div>${convertFileTypeToShortForm(file.type)}</div>
-                <div class="file-meta-gray-dot"></div>
-                <div>${(file.size / 1024 / 1024).toFixed(2)} MB</div>
-              </div>
-            </div>
-            <div class="ql-file-close" data-file-id="${fileId}">${getQuillFileDeleteIcon()}</div>
-          </div>
-        `;
-          bottomContainer.appendChild(fileEmbed);
-
-          // Add click event listener for delete icon
-          const deleteIcon = fileEmbed.querySelector(".ql-file-close");
-          if (deleteIcon) {
-            deleteIcon.addEventListener("click", (event) => {
-              const target = event?.currentTarget;
-              const fileId = target.getAttribute("data-file-id");
-              if (fileId) {
-                const fileElement = document.getElementById(fileId);
-                if (fileElement) {
-                  fileElement.remove();
-                  setAttachedFiles((prevFiles) =>
-                    prevFiles.filter((f) => f.name !== file.name)
-                  );
-                  if (onFileRemove) {
-                    onFileRemove(
-                      fileId,
-                      attachedFiles.filter((f) => f.name !== file.name)
-                    );
-                  }
-                }
-              }
-            });
-          }
-        }
-
-        // Restore the cursor position
-        editor.setSelection(cursorPosition);
-
-        setAttachedFiles((prevFiles) => [...prevFiles, file]);
-        if (onFileUpload) {
-          onFileUpload(file, [...attachedFiles, file]);
-        }
-      }
-    };
-  }, [msgRef]);
-
-  useEffect(() => {
-    if (msgRef?.current && useQuill) {
-      const quillEditor = msgRef?.current?.getEditor();
-      const toolbar = quillEditor.getModule("toolbar");
-      toolbar.addHandler("file", fileHandler);
-    }
-  }, [msgRef, fileHandler, useQuill]);
-
   const getContent = () => {
-    if (useQuill && msgRef.current && msgRef.current.getEditor) {
-      const editor = msgRef.current.getEditor();
-      return [
-        editor.root.innerHTML,
-        editor.getText(),
-        editor.root.innerText,
-        editor.root.childNodes,
-      ];
+    // console.log("getContent ", editor.getContent());
+    if (customEditor) {
+      // console.log("getContent ", editor.getContent());
+      // const editor = msgRef.current;
+      return [null, value, null, null];
     } else if (
       msgRef.current &&
       msgRef.current.msgRef &&
@@ -447,8 +351,9 @@ function MessageInputInner(
     }
     return ["", "", "", []];
   };
-
+  console.log("stateValue outside", stateValue);
   const send = () => {
+    console.log("stateValue in send", stateValue);
     if (stateValue.length > 0) {
       // Clear input only when it's uncontrolled mode
       if (value === undefined) {
@@ -461,6 +366,7 @@ function MessageInputInner(
       }
 
       const content = getContent();
+      console.log("content in send", content);
       if (content[1]?.trim().length === 0) {
         return;
       }
@@ -479,19 +385,51 @@ function MessageInputInner(
     }
   };
 
-  const handleChange = (content, delta, source, editor) => {
-    if (useQuill) {
-      const innerHTML = content;
-      const textContent = editor?.getText();
-      const innerText = editor?.root?.innerText;
-      const childNodes = editor?.root?.childNodes;
-      setStateValue(innerHTML);
+  const isValueValid = (message) => {
+    let parsedMessage;
+    // Parse the string into a DOM document
+    if (message) {
+      const parser = new DOMParser();
+      parsedMessage = parser.parseFromString(message, "text/html");
+      parsedMessage = parsedMessage?.body?.textContent;
+    }
+    // Extract the text content
+    return parsedMessage?.trim().length > 0 ? true : false;
+  };
 
+  useEffect(() => {
+    console.log("inside useeffect===>", value, sendDisabled);
+    if (customEditor && value?.trim().length > 0 && isValueValid(value)) {
       if (typeof sendDisabled === "undefined") {
-        setStateSendDisabled(!textContent || textContent.trim().length === 0);
+        setStateSendDisabled(value.trim().length === 0);
       }
+    }
+    if (value === undefined || value === null || value === "") {
+      if (typeof sendDisabled === "undefined") {
+        setStateSendDisabled(true);
+      }
+    }
+    setStateValue(value);
+  }, [customEditor, value, sendDisabled, setStateSendDisabled, setStateValue]);
 
-      onChange(innerHTML, textContent, innerText, childNodes);
+  const handleChange = (content, delta, source, editor) => {
+    if (customEditor) {
+      // const innerHTML = content;
+      // // const textContent = editor?.getText();
+      // // const innerText = editor?.root?.innerText;
+      // // const childNodes = editor?.root?.childNodes;
+      // setStateValue(innerHTML);
+
+      // if (typeof sendDisabled === "undefined") {
+      //   setStateSendDisabled(!innerHTML || innerHTML.trim().length === 0);
+      // }
+      if (value) {
+        if (typeof sendDisabled === "undefined") {
+          setStateSendDisabled(value.trim().length === 0);
+        }
+      }
+      console.log("handleChange MessageInput", value);
+      // onChange(value, null, null, null);
     } else {
       setStateValue(content);
 
@@ -546,7 +484,7 @@ function MessageInputInner(
         },
       },
     }),
-    [icons, quillIcons, fileHandler, handleColorChange, handleBackgroundChange]
+    [icons, quillIcons, handleColorChange, handleBackgroundChange]
   );
 
   const quillFormats = [
@@ -585,41 +523,42 @@ function MessageInputInner(
           />
         </div>
       )}
-      {useQuill ? (
-        <div
-          style={{
-            borderRadius: "md",
-            overflow: "hidden",
-            display: "flex",
-            flexDirection: "column",
-            position: "relative",
-          }}
-          // style={{ height: "300px", border: "inherit" }}
-        >
-          <ReactQuill
-            ref={msgRef}
-            theme="snow"
-            value={stateValue}
-            onChange={handleChange}
-            onKeyDown={handleKeyPress}
-            placeholder={ph}
-            readOnly={disabled}
-            modules={quillModules}
-            formats={quillFormats}
-          />
-          <div
-            id="bottom-container"
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              paddingBottom: "12px",
-              padding: "12px",
-              gap: "8px",
-              maxWidth: "100%",
-            }}
-          />
-        </div>
+      {customEditor ? (
+        customEditor
       ) : (
+        // <div
+        //   style={{
+        //     borderRadius: "md",
+        //     overflow: "hidden",
+        //     display: "flex",
+        //     flexDirection: "column",
+        //     position: "relative",
+        //   }}
+        //   // style={{ height: "300px", border: "inherit" }}
+        // >
+        //   <ReactQuill
+        //     ref={msgRef}
+        //     theme="snow"
+        //     value={stateValue}
+        //     onChange={handleChange}
+        //     onKeyDown={handleKeyPress}
+        //     placeholder={ph}
+        //     readOnly={disabled}
+        //     modules={quillModules}
+        //     formats={quillFormats}
+        //   />
+        //   <div
+        //     id="bottom-container"
+        //     style={{
+        //       display: "flex",
+        //       flexWrap: "wrap",
+        //       paddingBottom: "12px",
+        //       padding: "12px",
+        //       gap: "8px",
+        //       maxWidth: "100%",
+        //     }}
+        //   />
+        // </div>
         <div className={`${cName}__content-editor-wrapper`}>
           <EditorContainer
             fancyScroll={fancyScroll}
@@ -775,6 +714,7 @@ MessageInput.defaultProps = {
   onFileUpload: noop,
   onFileRemove: noop,
   autoFocusQuill: false,
+  customEditor: undefined,
 };
 
 MessageInputInner.defaultProps = MessageInput.defaultProps;

@@ -34,6 +34,7 @@ export interface MessageInputProps {
   onFileUpload?: (file: File, currentFiles: File[]) => void;
   onFileRemove?: (fileId: string, currentFiles?: File[]) => void;
   autoFocusQuill?: boolean;
+  customEditor?: any;
 }
 
 export declare const MessageInput: (
