@@ -247,6 +247,7 @@ function MessageInputInner(
     onAttachClick,
     sendButtonComponent,
     useQuill, // Add useQuill prop
+    attachComponent,
     ...rest
   },
   ref
@@ -378,14 +379,6 @@ function MessageInputInner(
         className
       )}
     >
-      {attachButton === true && (
-        <div className={`${cName}__tools`}>
-          <AttachmentButton
-            onClick={onAttachClick}
-            disabled={disabled === true || attachDisabled === true}
-          />
-        </div>
-      )}
       {useQuill ? (
         <ReactQuill
           ref={msgRef}
@@ -416,6 +409,16 @@ function MessageInputInner(
               value={stateValue}
             />
           </EditorContainer>
+        </div>
+      )}
+      {attachButton === true && (
+        <div className={`${cName}__tools`}>
+          {attachComponent || (
+            <AttachmentButton
+              onClick={onAttachClick}
+              disabled={disabled === true || attachDisabled === true}
+            />
+          )}
         </div>
       )}
       {sendButton === true && (
@@ -501,7 +504,7 @@ MessageInput.propTypes = {
    * onAttachClick handler
    */
   onAttachClick: PropTypes.func,
-
+  attachComponent: PropTypes.Component,
   sendButtonComponent: PropTypes.Component,
   useQuill: PropTypes.bool, // Add useQuill prop type
 };
