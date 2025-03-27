@@ -123,6 +123,16 @@ class MessageListInner extends React.Component {
       this.resizeObserver.observe(this.containerRef.current);
     }
     this.containerRef.current.addEventListener("scroll", this.handleScroll);
+
+    // Check if content isn't scrollable and manually trigger onYReachStart
+    const list = this.containerRef.current;
+    if (
+      list.scrollHeight <= list.clientHeight &&
+      this.props.onYReachStart &&
+      !this.props.disableOnYReachWhenNoScroll
+    ) {
+      this.props.onYReachStart();
+    }
   }
 
   componentDidUpdate(prevProps, prevState, snapshot) {
