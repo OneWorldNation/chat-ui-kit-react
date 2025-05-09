@@ -24,11 +24,13 @@ export interface MessageInputProps {
   ) => void;
   sendButton?: boolean;
   attachButton?: boolean;
+  emojiButton?: boolean;
   attachDisabled?: boolean;
   onAttachClick?: (evt: MouseEvent<HTMLButtonElement>) => void;
   sendButtonComponent: any;
   useQuill?: boolean;
   attachComponent?: any;
+  emojiComponent?: any;
 }
 
 export declare const MessageInput: (

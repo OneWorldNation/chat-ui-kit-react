@@ -248,6 +248,8 @@ function MessageInputInner(
     sendButtonComponent,
     useQuill, // Add useQuill prop
     attachComponent,
+    emojiComponent,
+    emojiButton,
     ...rest
   },
   ref
@@ -410,6 +412,9 @@ function MessageInputInner(
             />
           </EditorContainer>
         </div>
+      )}
+      {emojiButton === true && (
+        <div className={`${cName}__tools`}>{emojiComponent}</div>
       )}
       {attachButton === true && (
         <div className={`${cName}__tools`}>
