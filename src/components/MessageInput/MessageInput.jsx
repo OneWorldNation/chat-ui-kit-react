@@ -416,7 +416,7 @@ function MessageInputInner(
       {emojiButton === true && (
         <div className={`${cName}__tools`}>{emojiComponent}</div>
       )}
-      {attachButton === true && (
+      {/* {attachButton === true && (
         <div className={`${cName}__tools`}>
           {attachComponent || (
             <AttachmentButton
@@ -425,7 +425,7 @@ function MessageInputInner(
             />
           )}
         </div>
-      )}
+      )} */}
       {sendButton === true && (
         <div className={`${cName}__tools`}>
           <SendButton
