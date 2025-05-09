@@ -502,6 +502,9 @@ MessageInput.propTypes = {
   /** Show add attachment button */
   attachButton: PropTypes.bool,
 
+  /** Show emoji button */
+  emojiButton: PropTypes.bool,
+
   /** Disable add attachment button */
   attachDisabled: PropTypes.bool,
 
@@ -510,6 +513,7 @@ MessageInput.propTypes = {
    */
   onAttachClick: PropTypes.func,
   attachComponent: PropTypes.Component,
+  emojiComponent: PropTypes.Component,
   sendButtonComponent: PropTypes.Component,
   useQuill: PropTypes.bool, // Add useQuill prop type
 };
@@ -531,6 +535,7 @@ MessageInput.defaultProps = {
   onChange: noop,
   onSend: noop,
   useQuill: false, // Default to false
+  emojiButton: false,
 };
 
 MessageInputInner.defaultProps = MessageInput.defaultProps;
