@@ -413,17 +413,17 @@ function MessageInputInner(
           </EditorContainer>
         </div>
       )}
-      <div className={`${cName}__tools`}>{emojiComponent}</div>
-      {/* {attachButton === true && (
+      {/* <div className={`${cName}__tools`}>{emojiComponent}</div> */}
+      {attachButton === true && (
         <div className={`${cName}__tools`}>
-          {attachComponent || (
+          {emojiComponent || (
             <AttachmentButton
               onClick={onAttachClick}
               disabled={disabled === true || attachDisabled === true}
             />
           )}
         </div>
-      )} */}
+      )}
       {sendButton === true && (
         <div className={`${cName}__tools`}>
           <SendButton
