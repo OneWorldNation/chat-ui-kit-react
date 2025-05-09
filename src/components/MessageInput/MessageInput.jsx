@@ -413,9 +413,7 @@ function MessageInputInner(
           </EditorContainer>
         </div>
       )}
-      {emojiButton === true && (
-        <div className={`${cName}__tools`}>{emojiComponent}</div>
-      )}
+      <div className={`${cName}__tools`}>{emojiComponent}</div>
       {/* {attachButton === true && (
         <div className={`${cName}__tools`}>
           {attachComponent || (
