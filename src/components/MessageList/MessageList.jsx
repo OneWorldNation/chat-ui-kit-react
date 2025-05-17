@@ -207,33 +207,44 @@ class MessageListInner extends React.Component {
   scrollToEnd(scrollBehavior = this.props.scrollBehavior) {
     const list = this.containerRef.current;
 
-    // Directly scroll to the bottom using absolute position
-    // This works better with smooth scrolling than a relative offset approach
-    if (list) {
-      const scrollToPosition = list.scrollHeight - list.clientHeight;
+    if (!list) return;
 
-      if (list.scrollTo) {
-        list.scrollTo({
-          top: scrollToPosition,
-          behavior: scrollBehavior,
-        });
-      } else {
-        // Fallback for browsers not supporting scrollTo
-        list.scrollTop = scrollToPosition;
-      }
+    const targetScrollTop = list.scrollHeight - list.clientHeight;
+    const startScrollTop = Number(list.scrollTop);
+    const distance = targetScrollTop - startScrollTop;
 
-      this.lastClientHeight = list.clientHeight;
+    if (scrollBehavior === "smooth") {
+      let start = null;
+      const duration = 500; // Increased from 300ms to 500ms for slower, smoother animation
 
-      // Set noScroll flag after a small delay when using smooth scrolling
-      // to prevent interference with the animation
-      if (scrollBehavior === "smooth") {
-        setTimeout(() => {
+      const step = (timestamp) => {
+        if (!start) start = timestamp;
+        const progress = timestamp - start;
+        const percentage = Math.min(progress / duration, 1);
+
+        // Easing function for smoother animation
+        const easing = (t) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t);
+        const currentScroll =
+          startScrollTop + Number(distance) * easing(percentage);
+
+        list.scrollTop = Math.round(currentScroll);
+
+        if (percentage < 1) {
+          window.requestAnimationFrame(step);
+        } else {
+          this.lastClientHeight = list.clientHeight;
           this.noScroll = true;
-        }, 100); // Small delay to allow animation to start
-      } else {
-        // For auto scrolling, set immediately
-        this.noScroll = true;
-      }
+          this?.scrollRef?.current?.updateScroll();
+        }
+      };
+
+      window.requestAnimationFrame(step);
+    } else {
+      // For auto scrolling, use immediate scroll
+      list.scrollTop = targetScrollTop;
+      this.lastClientHeight = list.clientHeight;
+      this.noScroll = true;
+      this?.scrollRef?.current?.updateScroll();
     }
   }
 
@@ -275,8 +286,6 @@ class MessageListInner extends React.Component {
 
     const [customContent] = getChildren(children, [MessageListContent]);
 
-    return null;
-
     return (
       <div {...rest} className={classNames(cName, className)}>
         {loadingMore && (
@@ -309,7 +318,7 @@ class MessageListInner extends React.Component {
             touchAction: "none",
           }}
         >
-          {/* {customContent ? customContent : children} */}
+          {customContent ? customContent : children}
           <div
             className={`${cName}__scroll-to`}
             ref={this.scrollPointRef}
@@ -331,13 +340,13 @@ function MessageListFunc(props, ref) {
   const msgListRef = useRef();
 
   const scrollToBottom = (scrollBehavior) =>
-    msgListRef.current.scrollToEnd("auto");
+    msgListRef.current.scrollToEnd(scrollBehavior);
 
   // Return object with public Api
   useImperativeHandle(ref, () => ({
     scrollToBottom,
   }));
-  return null;
+
   return <MessageListInner ref={msgListRef} {...props} />;
 }
 
