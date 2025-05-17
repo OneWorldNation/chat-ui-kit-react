@@ -206,26 +206,35 @@ class MessageListInner extends React.Component {
 
   scrollToEnd(scrollBehavior = this.props.scrollBehavior) {
     const list = this.containerRef.current;
-    const scrollPoint = this.scrollPointRef.current;
 
-    // https://stackoverflow.com/a/45411081/6316091
-    const parentRect = list.getBoundingClientRect();
-    const childRect = scrollPoint.getBoundingClientRect();
+    // Directly scroll to the bottom using absolute position
+    // This works better with smooth scrolling than a relative offset approach
+    if (list) {
+      const scrollToPosition = list.scrollHeight - list.clientHeight;
 
-    // Scroll by offset relative to parent
-    const scrollOffset = childRect.top + list.scrollTop - parentRect.top;
+      if (list.scrollTo) {
+        list.scrollTo({
+          top: scrollToPosition,
+          behavior: scrollBehavior,
+        });
+      } else {
+        // Fallback for browsers not supporting scrollTo
+        list.scrollTop = scrollToPosition;
+      }
 
-    if (list.scrollBy) {
-      list.scrollBy({ top: scrollOffset, behavior: scrollBehavior });
-    } else {
-      list.scrollTop = scrollOffset;
+      this.lastClientHeight = list.clientHeight;
+
+      // Set noScroll flag after a small delay when using smooth scrolling
+      // to prevent interference with the animation
+      if (scrollBehavior === "smooth") {
+        setTimeout(() => {
+          this.noScroll = true;
+        }, 100); // Small delay to allow animation to start
+      } else {
+        // For auto scrolling, set immediately
+        this.noScroll = true;
+      }
     }
-
-    this.lastClientHeight = list.clientHeight;
-
-    // Important flag! Blocks strange Chrome mobile behaviour - automatic scroll.
-    // Chrome mobile sometimes trigger scroll when new content is entered to MessageInput. It's probably Chrome Bug - sth related with overflow-anchor
-    this.noScroll = true;
   }
 
   getLastMessageOrGroup = () => {
@@ -266,6 +275,8 @@ class MessageListInner extends React.Component {
 
     const [customContent] = getChildren(children, [MessageListContent]);
 
+    return null;
+
     return (
       <div {...rest} className={classNames(cName, className)}>
         {loadingMore && (
@@ -298,7 +309,7 @@ class MessageListInner extends React.Component {
             touchAction: "none",
           }}
         >
-          {customContent ? customContent : children}
+          {/* {customContent ? customContent : children} */}
           <div
             className={`${cName}__scroll-to`}
             ref={this.scrollPointRef}
@@ -320,13 +331,13 @@ function MessageListFunc(props, ref) {
   const msgListRef = useRef();
 
   const scrollToBottom = (scrollBehavior) =>
-    msgListRef.current.scrollToEnd(scrollBehavior);
+    msgListRef.current.scrollToEnd("auto");
 
   // Return object with public Api
   useImperativeHandle(ref, () => ({
     scrollToBottom,
   }));
-
+  return null;
   return <MessageListInner ref={msgListRef} {...props} />;
 }
 

@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 
 export const MessageListContent = ({ className, children, ...rest }) => (
   <div {...rest} className={className}>
-    {children}
+    {/* {children} */}
   </div>
 );
 
