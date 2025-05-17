@@ -204,7 +204,7 @@ class MessageListInner extends React.Component {
     this.containerRef.current.removeEventListener("scroll", this.handleScroll);
   }
 
-  scrollToEnd(scrollBehavior = this.props.scrollBehavior) {
+  scrollToEnd(scrollBehavior = this.props.scrollBehavior, duration) {
     const list = this.containerRef.current;
 
     if (!list) return;
@@ -215,12 +215,13 @@ class MessageListInner extends React.Component {
 
     if (scrollBehavior === "smooth") {
       let start = null;
-      const duration = 500; // Increased from 300ms to 500ms for slower, smoother animation
+      // Use provided duration, fallback to props duration, or default to 2000ms
+      const scrollDuration = duration || this.props.scrollDuration || 2000;
 
       const step = (timestamp) => {
         if (!start) start = timestamp;
         const progress = timestamp - start;
-        const percentage = Math.min(progress / duration, 1);
+        const percentage = Math.min(progress / scrollDuration, 1);
 
         // Easing function for smoother animation
         const easing = (t) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t);
@@ -240,7 +241,6 @@ class MessageListInner extends React.Component {
 
       window.requestAnimationFrame(step);
     } else {
-      // For auto scrolling, use immediate scroll
       list.scrollTop = targetScrollTop;
       this.lastClientHeight = list.clientHeight;
       this.noScroll = true;
@@ -339,8 +339,8 @@ MessageListInner.displayName = "MessageList";
 function MessageListFunc(props, ref) {
   const msgListRef = useRef();
 
-  const scrollToBottom = (scrollBehavior) =>
-    msgListRef.current.scrollToEnd(scrollBehavior);
+  const scrollToBottom = (scrollBehavior, duration) =>
+    msgListRef.current.scrollToEnd(scrollBehavior, duration);
 
   // Return object with public Api
   useImperativeHandle(ref, () => ({
@@ -416,6 +416,9 @@ MessageList.propTypes = {
    */
   scrollBehavior: PropTypes.oneOf(["auto", "smooth"]),
 
+  /** Duration in milliseconds for smooth scrolling. Only applies when scrollBehavior is 'smooth'. */
+  scrollDuration: PropTypes.number,
+
   /** Additional classes. */
   className: PropTypes.string,
 };
@@ -429,6 +432,7 @@ MessageList.defaultProps = {
   autoScrollToBottom: true,
   autoScrollToBottomOnMount: true,
   scrollBehavior: "auto",
+  scrollDuration: 2000,
 };
 
 MessageListInner.propTypes = MessageList.propTypes;

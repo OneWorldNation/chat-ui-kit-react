@@ -22,6 +22,7 @@ export interface MessageListOwnProps {
   autoScrollToBottom?: boolean;
   autoScrollToBottomOnMount?: boolean;
   scrollBehavior?: "auto" | "smooth";
+  scrollDuration?: number;
 }
 
 export type MessageListProps = ChatComponentPropsChildrenRef<
