@@ -223,8 +223,13 @@ class MessageListInner extends React.Component {
         const progress = timestamp - start;
         const percentage = Math.min(progress / scrollDuration, 1);
 
-        // Easing function for smoother animation
-        const easing = (t) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t);
+        // Intercom-style cubic-bezier easing function
+        // Starts fast and decelerates smoothly
+        const easing = (t) => {
+          return t < 0.5
+            ? 4 * t * t * t
+            : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1;
+        };
         const currentScroll =
           startScrollTop + Number(distance) * easing(percentage);
 
