@@ -24,6 +24,7 @@ class MessageListInner extends React.Component {
     this.scrollTicking = false;
     this.resizeTicking = false;
     this.noScroll = undefined;
+    this.initialMount = true;
   }
 
   getSnapshotBeforeUpdate() {
@@ -111,8 +112,7 @@ class MessageListInner extends React.Component {
   componentDidMount() {
     // Set scrollbar to bottom on start (getSnaphotBeforeUpdate is not invoked on mount)
     if (this.props.autoScrollToBottomOnMount === true) {
-      // Force 'auto' behavior for initial scroll to ensure it starts at bottom
-      this.scrollToEnd("auto");
+      this.scrollToEnd(this.props.scrollBehavior);
     }
 
     this.lastClientHeight = this.containerRef.current.clientHeight;
@@ -221,6 +221,16 @@ class MessageListInner extends React.Component {
     if (!list) return;
 
     const targetScrollTop = list.scrollHeight - list.clientHeight;
+
+    // For initial mount with smooth scroll, first set position instantly
+    if (this.initialMount && scrollBehavior === "smooth") {
+      this.initialMount = false;
+      list.scrollTop = targetScrollTop;
+      this.lastClientHeight = list.clientHeight;
+      this?.scrollRef?.current?.updateScroll();
+      return;
+    }
+
     const startScrollTop = Number(list.scrollTop);
     const distance = targetScrollTop - startScrollTop;
 
