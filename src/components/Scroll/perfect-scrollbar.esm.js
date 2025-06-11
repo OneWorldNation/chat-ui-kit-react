@@ -284,8 +284,8 @@ function processScrollDiff$1(
       ? i[contentHeight] !== i[containerHeight]
       : true;
 
-  // 1 for subpixel rounding
-  if (eventFlag && element[scrollTop] < 1) {
+  // Changed from 1 to 100 for increased threshold
+  if (eventFlag && element[scrollTop] < 100) {
     i.reach[y] = "start";
   }
 
