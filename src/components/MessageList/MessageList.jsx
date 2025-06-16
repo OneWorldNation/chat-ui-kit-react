@@ -24,6 +24,7 @@ class MessageListInner extends React.Component {
     this.scrollTicking = false;
     this.resizeTicking = false;
     this.noScroll = undefined;
+    this.initialMount = true;
   }
 
   getSnapshotBeforeUpdate() {
@@ -214,28 +215,63 @@ class MessageListInner extends React.Component {
     this.containerRef.current.removeEventListener("scroll", this.handleScroll);
   }
 
-  scrollToEnd(scrollBehavior = this.props.scrollBehavior) {
+  scrollToEnd(scrollBehavior = this.props.scrollBehavior, duration) {
     const list = this.containerRef.current;
-    const scrollPoint = this.scrollPointRef.current;
 
-    // https://stackoverflow.com/a/45411081/6316091
-    const parentRect = list.getBoundingClientRect();
-    const childRect = scrollPoint.getBoundingClientRect();
+    if (!list) return;
 
-    // Scroll by offset relative to parent
-    const scrollOffset = childRect.top + list.scrollTop - parentRect.top;
+    const targetScrollTop = list.scrollHeight - list.clientHeight;
 
-    if (list.scrollBy) {
-      list.scrollBy({ top: scrollOffset, behavior: scrollBehavior });
-    } else {
-      list.scrollTop = scrollOffset;
+    // For initial mount with smooth scroll, first set position instantly
+    if (this.initialMount && scrollBehavior === "smooth") {
+      this.initialMount = false;
+      list.scrollTop = targetScrollTop;
+      this.lastClientHeight = list.clientHeight;
+      this?.scrollRef?.current?.updateScroll();
+      return;
     }
 
-    this.lastClientHeight = list.clientHeight;
+    const startScrollTop = Number(list.scrollTop);
+    const distance = targetScrollTop - startScrollTop;
 
-    // Important flag! Blocks strange Chrome mobile behaviour - automatic scroll.
-    // Chrome mobile sometimes trigger scroll when new content is entered to MessageInput. It's probably Chrome Bug - sth related with overflow-anchor
-    this.noScroll = true;
+    if (scrollBehavior === "smooth") {
+      let start = null;
+      // Use provided duration, fallback to props duration, or default to 2000ms
+      const scrollDuration = duration || this.props.scrollDuration || 2000;
+
+      const step = (timestamp) => {
+        if (!start) start = timestamp;
+        const progress = timestamp - start;
+        const percentage = Math.min(progress / scrollDuration, 1);
+
+        // Intercom-style cubic-bezier easing function
+        // Starts fast and decelerates smoothly
+        const easing = (t) => {
+          return t < 0.5
+            ? 4 * t * t * t
+            : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1;
+        };
+        const currentScroll =
+          startScrollTop + Number(distance) * easing(percentage);
+
+        list.scrollTop = Math.round(currentScroll);
+
+        if (percentage < 1) {
+          window.requestAnimationFrame(step);
+        } else {
+          this.lastClientHeight = list.clientHeight;
+          this.noScroll = true;
+          this?.scrollRef?.current?.updateScroll();
+        }
+      };
+
+      window.requestAnimationFrame(step);
+    } else {
+      list.scrollTop = targetScrollTop;
+      this.lastClientHeight = list.clientHeight;
+      this.noScroll = true;
+      this?.scrollRef?.current?.updateScroll();
+    }
   }
 
   getLastMessageOrGroup = () => {
@@ -329,8 +365,8 @@ MessageListInner.displayName = "MessageList";
 function MessageListFunc(props, ref) {
   const msgListRef = useRef();
 
-  const scrollToBottom = (scrollBehavior) =>
-    msgListRef.current.scrollToEnd(scrollBehavior);
+  const scrollToBottom = (scrollBehavior, duration) =>
+    msgListRef.current.scrollToEnd(scrollBehavior, duration);
 
   // Return object with public Api
   useImperativeHandle(ref, () => ({
@@ -406,6 +442,9 @@ MessageList.propTypes = {
    */
   scrollBehavior: PropTypes.oneOf(["auto", "smooth"]),
 
+  /** Duration in milliseconds for smooth scrolling. Only applies when scrollBehavior is 'smooth'. */
+  scrollDuration: PropTypes.number,
+
   /** Additional classes. */
   className: PropTypes.string,
 };
@@ -419,6 +458,7 @@ MessageList.defaultProps = {
   autoScrollToBottom: true,
   autoScrollToBottomOnMount: true,
   scrollBehavior: "auto",
+  scrollDuration: 2000,
 };
 
 MessageListInner.propTypes = MessageList.propTypes;
