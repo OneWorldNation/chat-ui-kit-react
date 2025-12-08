@@ -15,6 +15,7 @@ import { prefix } from "../settings";
 import ContentEditable from "../ContentEditable";
 import SendButton from "../Buttons/SendButton";
 import AttachmentButton from "../Buttons/AttachmentButton";
+import VoiceNoteButton from "../Buttons/VoiceNoteButton";
 import PerfectScrollbar from "../Scroll";
 
 const Quill = ReactQuill.Quill;
@@ -244,6 +245,8 @@ function MessageInputInner(
     attachDisabled,
     sendButton,
     attachButton,
+    voiceNoteButton,
+    voiceNoteButtonComponent,
     onAttachClick,
     sendButtonComponent,
     useQuill, // Add useQuill prop
@@ -381,6 +384,16 @@ function MessageInputInner(
         className
       )}
     >
+      {voiceNoteButton === true && (
+        <div className={`${cName}__tools`}>
+          {voiceNoteButtonComponent || (
+            <VoiceNoteButton
+              onClick={onAttachClick}
+              disabled={disabled === true || attachDisabled === true}
+            />
+          )}
+        </div>
+      )}
       {useQuill ? (
         <ReactQuill
           ref={msgRef}
