@@ -514,6 +514,10 @@ MessageInput.propTypes = {
 
   /** Show add attachment button */
   attachButton: PropTypes.bool,
+  /** Show voice note button */
+  voiceNoteButton: PropTypes.bool,
+  /** Voice note button component */
+  voiceNoteButtonComponent: PropTypes.Component,
 
   /** Show emoji button */
   emojiButton: PropTypes.bool,

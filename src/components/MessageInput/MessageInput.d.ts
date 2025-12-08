@@ -24,6 +24,7 @@ export interface MessageInputProps {
   ) => void;
   sendButton?: boolean;
   attachButton?: boolean;
+  voiceNoteButton?: boolean;
   emojiButton?: boolean;
   attachDisabled?: boolean;
   onAttachClick?: (evt: MouseEvent<HTMLButtonElement>) => void;
@@ -31,6 +32,7 @@ export interface MessageInputProps {
   useQuill?: boolean;
   attachComponent?: any;
   emojiComponent?: any;
+  voiceNoteButtonComponent?: any;
 }
 
 export declare const MessageInput: (
