@@ -4,10 +4,8 @@ import classNames from "classnames";
 import { prefix } from "../settings";
 import Button from "./Button";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faPaperclip,
-  faMicrophone,
-} from "@fortawesome/free-solid-svg-icons/faPaperclip";
+import { faMicrophone } from "@fortawesome/free-solid-svg-icons/faMicrophone";
+import { faPaperclip } from "@fortawesome/free-solid-svg-icons/faPaperclip";
 
 export const VoiceNoteButton = ({ className, children, ...rest }) => {
   const cName = `${prefix}-button--voice-note`;
