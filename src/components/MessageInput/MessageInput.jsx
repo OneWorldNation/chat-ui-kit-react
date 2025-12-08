@@ -547,6 +547,8 @@ MessageInput.defaultProps = {
   autoFocus: false,
   sendButton: true,
   attachButton: true,
+  voiceNoteButton: false,
+  voiceNoteButtonComponent: null,
   attachDisabled: false,
   onAttachClick: noop,
   onChange: noop,
